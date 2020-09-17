@@ -1,52 +1,49 @@
 import React from 'react'
 import SearchListItem from './SearchListItem'
 import ProductList from './domain/ProductList'
+import axios from 'axios'
 
-export default class SearchListResult extends React.Component {
-    render() {
-        const firstList: ProductList = {
-            id: '234gdjfhs',
-            name: 'minhas compras semanais',
-            listOfProducts: [
-                {
-                    quantity: 1,
-                    name: 'Kindle',
-                    price: 400.0,
-                    isPurchased: true,
-                },
-            ],
-        }
-        const secondList: ProductList = {
-            id: '234gdjfhs',
-            name: 'compras da semana',
-            listOfProducts: [
-                {
-                    quantity: 1,
-                    name: 'Kindle',
-                    price: 400.0,
-                    isPurchased: true,
-                },
-            ],
-        }
-        const thirdList: ProductList = {
-            id: '234gdjfhs',
-            name: 'lista de 2020',
-            listOfProducts: [
-                {
-                    quantity: 1,
-                    name: 'Kindle',
-                    price: 400.0,
-                    isPurchased: true,
-                },
-            ],
-        }
+export default class SearchListResult extends React.Component<
+    SearchListResultProps,
+    SearchListResultState
+> {
+    constructor(props: SearchListResultProps) {
+        super(props)
 
-        return (
-            <div>
-                <SearchListItem productList={firstList} />
-                <SearchListItem productList={secondList} />
-                <SearchListItem productList={thirdList} />
-            </div>
-        )
+        this.state = {
+            productLists: [],
+        }
     }
+
+    componentDidMount = () => {
+        this.searchLists('a')
+    }
+
+    render() {
+        const results = this.state.productLists.map(currentList => (
+            <SearchListItem productList={currentList} key={currentList.id} />
+        ))
+
+        return <div>{results}</div>
+    }
+
+    private searchLists = async (name: string) => {
+        const response = await axios.get<ProductList[]>(
+            'http://localhost:8080/list',
+            {
+                params: {name},
+            }
+        )
+        if (response.status != 200) {
+            console.log('Error getting lists')
+        }
+        const productLists = response.data
+        this.setState({productLists})
+    }
+}
+
+interface SearchListResultProps {}
+
+interface SearchListResultState {
+    productLists: ProductList[]
 }
